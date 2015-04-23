@@ -3,7 +3,8 @@
  * =========================
  *
  * A JavaScript library for connecting SVG things.
- * Created with <3 and JavaScript by the jillix developers.
+ * Forked from https://github.com/jillix/svg.connectable.js
+ * Modified by Loretek. Algorithm for creating connector curves from Christian Tzurcanu (https://github.com/ctzurcanu)
  *
  * svg.connectable.js 1.0.1
  * Licensed under the MIT license.
@@ -19,23 +20,32 @@
      *
      * @name connectable
      * @function
-     * @param {Object} options An object containing the following fields:
+     * @param {Object} options An object containing any of the following fields:
      *
-     *  - `container` (SVGElement): The line elements container.
-     *  - `markers` (SVGElement): The marker elements container.
+     *  - `container` (SVGElement): The connector elements container. Defaults to source parent.
+     *  - `markers` (SVGElement): The marker elements container. Defaults to source parent.
+     *  - `sourceAttach` (String): Connector attachment for source element: 'center' / 'perifery'. Defaults to 'center'
+     *  - `targetAttach` (String): Connector attachment for target element: 'center' / 'perifery'. Defaults to 'center'
+     *  - `type` (String): Connector type: 'straight' or 'curved'. Defaults to 'straight'
+     *  - `marker` (String): Can be: an SVGElement / 'null' / 'default'. Defaults to 'null'
+     *  - `color` (String): Connector color. Defaults to '#000000'.
      *
      * @param {SVGElement} elmTarget The target SVG element.
      * @return {Object} The connectable object containing:
      *
      *  - `source` (SVGElement): The source element.
      *  - `target` (SVGElement): The target element.
-     *  - `line` (SVGElement): The line element.
+     *  - `connector` (SVGElement): The connector element (line / path / polygon).
      *  - `marker` (SVGElement): The marker element.
-     *  - `padEllipe` (Boolean): If `true`, the line coordinates will be placed with a padding.
-     *  - [`computeLineCoordinates` (Function)](#computelinecoordinatescon)
+     *  - [`computeConnectorCoordinates` (Function)](#computeconnectorcoordinatescon)
      *  - [`update` (Function)](#update)
-     *  - [`setLineColor` (Function)](#setlinecolorcolor-c)
+     *  - [`setConnectorColor` (Function)](#setconnectorcolorcolor-c)
+     *  - [`setMarker`] (Function)](#setmarker)
+     *  - [`setConnectorAttachment`] (Function)](#setconnectorattachment)
+     *  - [`setConnector`] (Function)](#setconnector)
+     *  - [`setType`] (Function)](#settype)
      */
+
     function connectable(options, elmTarget) {
 
         var con = {};
@@ -45,84 +55,114 @@
             options = {};
         }
 
-        container = options.container || container;
+        container = options.container || this.parent || container;
         var elmSource = this;
-        markers = options.markers || markers;
-
-        var marker = markers.marker(10, 10);
-        var markerId = "triangle-" + Math.random().toString(16);
-        var line = container.line().attr("marker-end", "url(#" + markerId + ")");
-
-        marker.attr({
-            id: markerId,
-            viewBox: "0 0 10 10",
-            refX: "0",
-            refY: "5",
-            markerUnits: "strokeWidth",
-            markerWidth: "4",
-            markerHeight: "5"
-        });
-
-        marker.path().attr({
-            d: "M 0 0 L 10 5 L 0 10 z"
-        });
-
-        // Source and target positions
-        var sPos = {};
-        var tPos = {};
+        markers = options.markers || this.parent || markers;
 
         // Append the SVG elements
-        con.source = elmSource;
+        con.source = elmSource; //'center', 'perifery'
         con.target = elmTarget;
-        con.line = line;
-        con.marker = marker;
+        con.type = options.type || 'straight' //'straight', 'curved'
+        if(options.connector && options.connector.type == 'path'){
+            con.connector = options.connector
+            var patharr = con.connector.array.valueOf()
+            if(!patharr[1][0] == 'M' || !patharr[2][0] == 'M'){
+                var box = con.connector.bbox();
+                patharr.splice(0,0,['M', box.x+box.width/2, box.y], ['M', box.x + box.width/2, box.y]);
+                con.connector.plot(patharr);
+            }
+        }
+        else
+            con.connector = container.path().attr('connectortype', 'default').fill('none');
+
+        con.sourceAttach = options.sourceAttach || 'center'
+        con.targetAttach = options.targetAttach || 'center'
+        con.color = options.color || '#000000'
+
 
         /**
-         * computeLineCoordinates
-         * The function that computes the new coordinates.
-         * It can be overriden with a custom function.
+         * setMarker
+         * The function that sets the marker
+         * It can be an SVGElement / 'default' / 'null'
          *
-         * @name computeLineCoordinates
+         * @name setMarker
+         * @function
+         * @param {String} SVGElement / 'default' / 'null'
+         * @param {SVGElement} markers Optional parent for the marker element.
+         * @return {Connectable} The connectable instance.
+         */
+        con.setMarker = function(marker, markers, c){
+            c = c || this;
+
+            if(markers)
+                    c.markers = markers;
+            if(!marker || marker == 'null'){
+                c.marker = null
+                if(c.connector.attr("marker-end")){
+                    var markerid = c.connector.attr("marker-end");
+                    SVG.get(markerid.slice(5, markerid.length-1)).remove();
+                    c.connector.removeClass("marker-end");
+                }
+            }
+            else if(marker == 'default'){
+                var marker = c.markers.marker(30, 30);
+                var markerId = "triangle-" + Math.random().toString(16);
+                c.connector.attr("marker-end", "url(#" + markerId + ")");
+
+                marker.attr({
+                    id: markerId,
+                    viewBox: "0 0 30 30",
+                    refX: "30",
+                    refY: "15",
+                    markerUnits: "strokeWidth",
+                    markerWidth: "12",
+                    markerHeight: "15"
+                });
+
+                marker.path().attr({
+                    d: "M 0 0 L 30 15 L 0 30 z"
+                });
+
+                c.marker = marker;
+                c.marker.fill(c.color);
+            }
+            else
+                c.marker = marker
+            return c;
+        }
+
+        con.setMarker(options.marker, options.markers);
+
+
+        /**
+         * computeConnectorCoordinates
+         * The function that computes the new coordinates.
+         *
+         * @name computeConnectorCoordinates
          * @function
          * @param {Connectable} con The connectable instance.
-         * @return {Object} An object containing the `x1`, `x2`, `y1` and `y2` coordinates.
+         * @return {Object} An object containing the connector path array.
          */
-        con.computeLineCoordinates = function (con) {
-
+        con.computeConnectorCoordinates = function (con) {
+            con = con || this;
+            var temp = {}, p;
             var sPos = con.source.bbox();
             var tPos = con.target.bbox();
 
-            var x1 = sPos.x + sPos.width / 2;
-            var y1 = sPos.y + sPos.height / 2;
-            var x2 = tPos.x + tPos.width / 2;
-            var y2 = tPos.y + tPos.height / 2;
+            if(con.sourceAttach == 'center')
+                temp.point1 = [sPos.x + sPos.width / 2, sPos.y + sPos.height / 2]
+            else if(con.source.type == 'ellipse'){
 
-            return {
-                x1: x1,
-                y1: y1,
-                x2: x2,
-                y2: y2
-            };
-        };
-
-        if (options.padEllipse) {
-            con.computeLineCoordinates = function (con) {
-                var sPos = con.source.transform();
-                var tPos = con.target.transform();
-
-                // Get ellipse radiuses
-                var xR1 = parseFloat($("ellipse", con.source.node)[0].getAttribute("rx"));
-                var yR1 = parseFloat($("ellipse", con.source.node)[0].getAttribute("ry"));
-
-                var xR2 = parseFloat($("ellipse", con.target.node)[0].getAttribute("rx"));
-                var yR2 = parseFloat($("ellipse", con.target.node)[0].getAttribute("ry"));
+                // Get ellipse radius
+                var xR1 = parseFloat(con.source.attr('rx'));
+                var yR1 = parseFloat(con.source.attr('ry'));
 
                 // Get centers
-                var sx = sPos.x + xR1 / 2;
-                var sy = sPos.y + yR1 / 2;
+                var sx = con.source.cx()
+                var sy = con.source.cy()
 
-                var tx = tPos.x + xR2 / 2;
-                var ty = tPos.y + yR2 / 2;
+                var tx = con.target.cx()
+                var ty = con.target.cy()
 
                 // Calculate distance from source center to target center
                 var dx = tx - sx;
@@ -137,52 +177,297 @@
                 var x1 = sx + xR1 * ux;
                 var y1 = sy + yR1 * uy;
 
+                temp.point1 = [x1 + xR1 / 2, y1 + yR1 / 2]
+            }
+            else if(con.source.type == 'path'){
+                var arr1 = JSON.parse(JSON.stringify(con.source.array.valueOf()));
+                if(arr1[arr1.length-1][0] == 'Z')
+                    arr1.splice(arr1.length-1,1)
+                var arr = arr1;
+                var point = 'point2'
+            }
+            else{
+                var arr1 = [
+                    ['M', sPos.x + sPos.width / 2, sPos.y],
+                    ['L', sPos.x + sPos.width, sPos.y + sPos.height / 2],
+                    ['L', sPos.x + sPos.width / 2, sPos.y + sPos.height],
+                    ['L', sPos.x, sPos.y + sPos.height / 2]
+                ]
+                var arr = arr1
+                var point = 'point2'
+            }
+
+
+            if(con.targetAttach == 'center')
+                temp.point2 = [tPos.x + tPos.width / 2, tPos.y + tPos.height / 2]
+            else if(con.source.type == 'ellipse'){
+                // Get ellipse radius
+                var xR2 = parseFloat(con.target.attr('rx'));
+                var yR2 = parseFloat(con.target.attr('ry'));
+
+                // Get centers
+                var sx = con.source.cx()
+                var sy = con.source.cy()
+
+                var tx = con.target.cx()
+                var ty = con.target.cy()
+
+                // Calculate distance from source center to target center
+                var dx = tx - sx;
+                var dy = ty - sy;
+                var d = Math.sqrt(dx * dx + dy * dy);
+
+                // Construct unit vector between centers
+                var ux = dx / d;
+                var uy = dy / d;
+
                 // Point on target circle
                 var x2 = sx + (d - xR2 - 5) * ux;
                 var y2 = sy + (d - yR2 - 5) * uy;
 
-                return {
-                    x1: x1 + xR1 / 2,
-                    y1: y1 + yR1 / 2,
-                    x2: x2 + xR2 / 2,
-                    y2: y2 + yR2 / 2
-                };
-            };
-        }
+                temp.point2 = [x2 + xR2 / 2, y2 + yR2 / 2]
+            }
+            else if(con.source.type == 'path'){
+                var arr2 = JSON.parse(JSON.stringify(con.target.array.valueOf()));
+                if(arr2[arr2.length-1][0] == 'Z')
+                    arr2.splice(arr2.length-1,1)
+                var arr = arr2;
+                var point = 'point1'
+            }
+            else{
+                var arr2 = [
+                    ['M', tPos.x + tPos.width / 2, tPos.y],
+                    ['L', tPos.x + tPos.width, tPos.y + tPos.height / 2],
+                    ['L', tPos.x + tPos.width / 2, tPos.y + tPos.height],
+                    ['L', tPos.x, tPos.y + tPos.height / 2]
+                ]
+                var arr = arr2
+                var point = 'point1'
+            }
+
+            if(!temp.point1 || !temp.point2){
+                temp.min = Number.MAX_SAFE_INTEGER;
+                if(!temp.point1 && !temp.point2)
+                    for(var i = 0 ; i < arr1.length; i++){
+                        for(var j = 0 ; j < arr2.length; j++){
+                            var dist = Math.pow((arr2[j][arr2[j].length-2] - arr1[i][arr1[i].length-2]),2) + Math.pow((arr2[j][arr2[j].length-1] - arr1[i][arr1[i].length-1]),2)
+                            if(temp.min > dist){
+                                temp.min = dist
+                                temp.point1 = [arr1[i][arr1[i].length-2], arr1[i][arr1[i].length-1]]
+                                temp.point2 = [arr2[j][arr2[j].length-2], arr2[j][arr2[j].length-1]]
+                            }
+                        }
+                    }
+                else{
+                    point = temp[point];
+                    for(var i = 0 ; i < arr.length; i++){
+                        var dist = Math.pow((point[0] - arr[i][arr[i].length-2]),2) + Math.pow((point[1] - arr[i][arr[i].length-1]),2)
+                        if(temp.min > dist){
+                            temp.min = dist
+                            temp.point = [arr[i][arr[i].length-2], arr[i][arr[i].length-1]]
+                        }
+                    }
+                    if(!temp.point1)
+                        temp.point1 = temp.point
+                    else
+                        temp.point2 = temp.point
+                }
+            }
+
+            var pp1 = temp.point1
+            var pp2 = temp.point2
+
+            if(con.type == 'curved'){
+                var c1 = {x: con.source.cx(), y: con.source.cy()}
+                var c2 = {x: con.target.cx(), y: con.target.cy()}
+
+                if(Math.abs(pp1[0] - c1.x) > 0.5){
+                    var m1 = (pp1[1] - c1.y) / (pp1[0] - c1.x)
+                    var b1 = pp1[1] - m1 * pp1[0];
+
+                    if(Math.abs(pp2[0] - pp1[0]) < Math.abs(pp2[1] - pp1[1])){
+                        var x1 = pp1[0] + (pp2[0] - pp1[0]) / 5
+                        var attr1 = {x: x1, y: m1 * x1 + b1}
+                    }
+                    else if(Math.abs(pp1[1] - c1.y) > 0.5){
+                        var y1 = pp1[1] + (pp2[1] - pp1[1]) / 5
+                        var attr1 = {x: (y1 - b1) / m1, y: y1}
+                    } 
+                    else
+                        var attr1 = {x: pp1[0] + Math.sign(pp2[0]-pp1[0]) * Math.abs((pp2[1] - pp1[1]) / 5), y: pp1[1]}                 
+                }
+                else
+                    var attr1 = {x: pp1[0], y: pp1[1] + (pp2[1] - pp1[1]) / 5}
+
+                if(Math.abs(pp2[0] - c2.x) > 0.5){
+                    var m2 = (pp2[1] - c2.y) / (pp2[0] - c2.x)
+                    var b2 = pp2[1] - m2 * pp2[0];
+
+                    if(Math.abs(pp2[0] - pp1[0]) < Math.abs(pp2[1] - pp1[1])){
+                        var x2 = pp2[0] - (pp2[0] - pp1[0]) / 5
+                        var attr2 = {x: x2, y: m2 * x2 + b2}
+                    }
+                    else if(Math.abs(pp2[1] - c2.y) > 0.5){
+                        var y2 = pp2[1] - (pp2[1] - pp1[1]) / 5
+                        var attr2 = {x: (y2 - b2) / m2, y: y2}
+                    }
+                    else
+                        var attr2 = {x: pp2[0] - Math.sign(pp2[0]-pp1[0]) * Math.abs((pp2[1] - pp1[1]) / 5), y: pp2[1]}   
+                }
+                else
+                    var attr2 = {x: pp2[0], y: pp2[1] - (pp2[1] - pp1[1]) / 5}
+
+                var middle = {x: attr1.x + (attr2.x - attr1.x) / 2, y: attr1.y + (attr2.y - attr1.y) / 2}
+
+                var points = [
+                    ['M', pp1[0], pp1[1]],
+                    ['C', attr1.x, attr1.y, attr1.x, attr1.y, middle.x, middle.y],
+                    ['C', attr2.x, attr2.y, attr2.x, attr2.y, pp2[0], pp2[1]]
+                ]  
+            }
+            else
+                var points = [
+                    ['M', pp1[0], pp1[1]],
+                    ['L', pp2[0], pp2[1]]
+                ]
+            return points;
+        };
 
         elmSource.cons = elmSource.cons || [];
         elmSource.cons.push(con);
 
         /**
          * update
-         * Updates the line coordinates.
+         * Updates the connector's path
          *
          * @name update
          * @function
          * @return {undefined}
          */
-        con.update = function () {
-            line.attr(con.computeLineCoordinates(con));
+       con.update = function () {
+            if(con.connector.attr('connectortype') == 'default'){
+                con.connector.plot(con.computeConnectorCoordinates(con))
+            }
+            else{
+                var arr = con.connector.array.valueOf();
+
+                //find connector's attachment points
+                var path = con.computeConnectorCoordinates(con)
+                var pp1 = [path[0][1], path[0][2]]
+                var pp2 = [path[path.length-1][path[path.length-1].length-2], path[path.length-1][path[path.length-1].length-1]]
+
+                //compare line(between attachment points) lengths for scale
+                var newdiag = Math.sqrt(Math.pow((pp2[0] - pp1[0]),2) + Math.pow((pp2[1] - pp1[1]),2))
+                var olddiag = Math.sqrt(Math.pow((arr[1][1] - arr[0][1]),2) + Math.pow((arr[1][2] - arr[0][2]),2))
+
+                var scale = newdiag / olddiag
+
+                //get angle of line from line slope
+                var angle = Math.atan((coord.y2 - coord.y1) / (coord.x2 - coord.x1))
+                if(angle > 0 && coord.y2 < coord.y1)
+                    angle = Math.PI + angle
+                else if(angle < 0 && coord.y2 > coord.y1 && coord.x2 < coord.x1)
+                    angle = Math.PI + angle
+                //get original angle of the line
+                var originalangle = Math.atan((arr[1][2] - arr[0][2]) / (arr[1][1] - arr[0][1]))
+
+                var center = {x: con.connector.cx(), y: con.connector.cy()}
+                //transformed connector center coordinates for rotation
+                var tcenter = {x: pp1[0] + (pp2[0]-pp1[0]) / 2, y: pp1[1] + (pp2[1]-pp1[1]) / 2}
+
+                //initialize matrix with translation from original center to transformed center
+                var transform = [1, 0, 0, 1, tcenter.x - center.x, tcenter.y - center.y];
+                //rotate translated matrix and multiply it with scaled neutral matrix
+                transform = rotateMatrix(transform, -angle+originalangle, tcenter)
+                transformt = scaleMatrix([1,0,0,1,0,0], [scale, scale], center) 
+                transform = multiplyMatrix(transformt, transform);
+                con.connector.transform('matrix', transform.join(','));
+            }
         };
         con.update();
+
         elmSource.on("dragmove", con.update);
         elmTarget.on("dragmove", con.update);
 
         /**
-         * setLineColor
-         * Sets the line color.
+         * setConnectorColor
+         * Sets the connector color.
          *
-         * @name setLineColor
+         * @name setConnectorColor
          * @function
          * @param {String} color The new color.
          * @param {Connectable} c The connectable instance.
          * @return {undefined}
          */
-        con.setLineColor = function (color, c) {
+        con.setConnectorColor = function (color, c) {
             c = c || this;
-            c.line.stroke(color);
-            c.marker.fill(color);
+            c.color = color;
+            c.connector.stroke(color);
+            if(c.marker)
+                c.marker.fill(color);
         };
+        con.setConnectorColor(con.color)
+
+        /**
+         * setConnectorAttachment
+         * Sets the connector's attachment type.
+         *
+         * @name setConnectorAttachment
+         * @function
+         * @param {String} element Can be either 'source' or 'target'
+         * @param {String} type Can be either 'center' or 'perifery'
+         * @param {Connectable} c The connectable instance.
+         * @return {undefined}
+         */
+        con.setConnectorAttachment = function(element, type, c){
+            c = c || this;
+            c[element+'Attach'] = type;
+            c.update();
+        }
+
+        /**
+         * setConnector
+         * Sets the connector
+         *
+         * @name setConnector
+         * @function
+         * @param {SVGElement} connector Can be either an SVGElement or 'default'
+         * @param {Connectable} c The connectable instance.
+         * @return {undefined}
+         */
+        con.setConnector = function(connector, c){
+            c = c || this;
+            if(connector){
+                c.connector.remove();
+                if(connector == 'default'){
+                    c.connector = container.path().attr('connectortype', 'default').fill('none');
+                    c.setConnectorColor(c.color);
+                }
+                else
+                    c.connector = connector;
+                c.update();
+            }
+        }
+
+        /**
+         * setType
+         * Sets the connector's type.
+         *
+         * @name setType
+         * @function
+         * @param {String} type Can be either 'straight' or 'curved'
+         * @param {Connectable} c The connectable instance.
+         * @return {undefined}
+         */
+        con.setType = function(type, c){
+            c = c || this;
+            if(['straight', 'curved'].indexOf(type) != -1){
+                if(c.type != type){
+                    c.type = type;
+                    c.update();
+                }
+            }
+        }
 
         return con;
     }
