@@ -11,6 +11,15 @@ This library depends on:
  - [SVG.js](https://github.com/wout/svg.js)
  - [svg.draggable.js](https://github.com/jillix/svg.draggable.js) (note this is the @jillix fork of the original *svg.draggable.js* project)
 
+
+Different from original [jillix library](https://github.com/jillix/svg.connectable.js):
+
+ - the connector can be any SVG Path element defined through use() (usually connectors are reused). See example. Note the two M points added for attachment precision. 
+ - you can define the [type of attachment](#setconnectorattachmentelement-type-c) (center, perifery) separate for source and target
+ - you can have straight/curved connectors - available for the 'default' connector.
+ - functions for changing the connection settings after initializing it.
+ - padEllipse function from jillix is used automatically for ellipses ('perifery' attachment).
+
  Following example can be found and tested at: [http://jsfiddle.net/loredana_cirstea/L2sjjc3b/8/](http://jsfiddle.net/loredana_cirstea/L2sjjc3b/8/)
 
 
@@ -102,10 +111,10 @@ Connects two elements.
  - [`computeConnectorCoordinates` (Function)](#computeconnectorcoordinatescon)
  - [`update` (Function)](#update)
  - [`setConnectorColor` (Function)](#setconnectorcolorcolor-c)
- - [`setMarker` (Function)](#setmarker)
- - [`setConnectorAttachment` (Function)](#setconnectorattachment)
- - [`setConnector` (Function)](#setconnector)
- - [`setType` (Function)](#settype)
+ - [`setMarker` (Function)](#setmarkermarker-markers-c)
+ - [`setConnectorAttachment` (Function)](#setconnectorattachmentelement-type-c)
+ - [`setConnector` (Function)](#setconnectorconnector-c)
+ - [`setType` (Function)](#settypetype-c)
 
 ### `computeConnectorCoordinates(con)`
 The function that computes the new coordinates.
