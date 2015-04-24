@@ -174,5 +174,5 @@ Sets the connector and marker color.
 4. Open a pull request, and reference the initial issue in the pull request
    message.
 
-## GNU GENERAL PUBLIC LICENSE
-See the [GPLv3](./LICENSE) file.
+## GPLv3 License
+See the [LICENSE](./LICENSE) file.
