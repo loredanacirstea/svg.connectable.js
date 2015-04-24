@@ -63,13 +63,13 @@
         con.source = elmSource; //'center', 'perifery'
         con.target = elmTarget;
         con.type = options.type || 'straight' //'straight', 'curved'
-        if(options.connector && options.connector.type == 'path'){
+        if(options.connector && options.connector.target.type == 'path'){
             con.connector = options.connector
-            var patharr = con.connector.array.valueOf()
+            var patharr = con.connector.target.array.valueOf()
             if(!patharr[1][0] == 'M' || !patharr[2][0] == 'M'){
                 var box = con.connector.bbox();
                 patharr.splice(0,0,['M', box.x+box.width/2, box.y], ['M', box.x + box.width/2, box.y]);
-                con.connector.plot(patharr);
+                con.connector.target.plot(patharr);
             }
         }
         else
@@ -349,7 +349,7 @@
                 con.connector.plot(con.computeConnectorCoordinates(con))
             }
             else{
-                var arr = con.connector.array.valueOf();
+                var arr = con.connector.target.array.valueOf();
 
                 //find connector's attachment points
                 var path = con.computeConnectorCoordinates(con)
@@ -362,26 +362,74 @@
 
                 var scale = newdiag / olddiag
 
-                //get angle of line from line slope
-                var angle = Math.atan((coord.y2 - coord.y1) / (coord.x2 - coord.x1))
-                if(angle > 0 && coord.y2 < coord.y1)
+                //new angle of connector
+                var angle = Math.atan((pp2[1] - pp1[1]) / (pp2[0] - pp1[0]))
+                if(angle > 0 && pp2[1] < pp1[1])
                     angle = Math.PI + angle
-                else if(angle < 0 && coord.y2 > coord.y1 && coord.x2 < coord.x1)
+                else if(angle < 0 && pp2[1] > pp1[1] && pp2[0] < pp1[0])
                     angle = Math.PI + angle
-                //get original angle of the line
-                var originalangle = Math.atan((arr[1][2] - arr[0][2]) / (arr[1][1] - arr[0][1]))
 
-                var center = {x: con.connector.cx(), y: con.connector.cy()}
-                //transformed connector center coordinates for rotation
+                //new center coordinates for the connector
                 var tcenter = {x: pp1[0] + (pp2[0]-pp1[0]) / 2, y: pp1[1] + (pp2[1]-pp1[1]) / 2}
+                
+                //get original angle and center of the connector
+                var originalangle = Math.atan((arr[1][2] - arr[0][2]) / (arr[1][1] - arr[0][1]))
+                var center = {x: con.connector.target.cx(), y: con.connector.target.cy()}
 
-                //initialize matrix with translation from original center to transformed center
-                var transform = [1, 0, 0, 1, tcenter.x - center.x, tcenter.y - center.y];
-                //rotate translated matrix and multiply it with scaled neutral matrix
-                transform = rotateMatrix(transform, -angle+originalangle, tcenter)
-                transformt = scaleMatrix([1,0,0,1,0,0], [scale, scale], center) 
-                transform = multiplyMatrix(transformt, transform);
-                con.connector.transform('matrix', transform.join(','));
+                //initialize matrix with translation from original center to the new center
+                var m = [1, 0, 0, 1, tcenter.x - center.x, tcenter.y - center.y];
+                
+                //rotate translated matrix
+                var aa = m[0],
+                    ab = m[1],
+                    ac = m[2],
+                    ad = m[3],
+                    atx = m[4],
+                    aty = m[5],
+                    st = Math.sin(-angle+originalangle),
+                    ct = Math.cos(-angle+originalangle)
+                //first translate back to origin (0,0) by deducting new center coordinates
+                atx = - aa * tcenter.x - ac * tcenter.y + atx
+                aty = - ab * tcenter.x - ad * tcenter.y + aty
+                //matrix rotation algorithm
+                m[0] = aa*ct + ab*st;
+                m[1] = -aa*st + ab*ct;
+                m[2] = ac*ct + ad*st;
+                m[3] = -ac*st + ct*ad;
+                m[4] = ct*atx + st*aty;
+                m[5] = ct*aty - st*atx;
+                //translate to new center coordinates
+                m[4] = aa * tcenter.x + ac * tcenter.y + m[4]
+                m[5] = ab * tcenter.x + ad * tcenter.y + m[5]
+                
+                //translate neutral matrix to origin by deducting original center coordinated then scale and translate again to original center 
+                var aa = 1,
+                    ab = 0,
+                    ac = 0,
+                    ad = 1,
+                    atx = (- aa * center.x - ac * center.y) * scale,
+                    aty = (- ab * center.x - ad * center.y) * scale,
+                    sm = []
+
+                sm[0] = aa * scale
+                sm[1] = ab * scale
+                sm[2] = ac * scale
+                sm[3] = ad * scale
+                sm[4] = aa * center.x + ac * center.y + atx
+                sm[5] = ab * center.x + ad * center.y + aty
+
+                //multiply scaled matrix with rotated matrix
+
+                var matrix = [];
+
+                matrix[0] = sm[0]*m[0] + sm[1]*m[2];
+                matrix[1] = sm[0]*m[1] + sm[1]*m[3];
+                matrix[2] = sm[2]*m[0] + sm[3]*m[2];
+                matrix[3] = sm[2]*m[1] + sm[3]*m[3];
+                matrix[4] = m[0]*sm[4] + m[2]*sm[5] + m[4];
+                matrix[5] = m[1]*sm[4] + m[3]*sm[5] + m[5];
+
+                con.connector.transform('matrix', matrix.join(','));
             }
         };
         con.update();
