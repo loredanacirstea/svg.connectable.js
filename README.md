@@ -11,6 +11,9 @@ This library depends on:
  - [SVG.js](https://github.com/wout/svg.js)
  - [svg.draggable.js](https://github.com/jillix/svg.draggable.js) (note this is the @jillix fork of the original *svg.draggable.js* project)
 
+ Following example can be found and tested at: [http://jsfiddle.net/loredana_cirstea/L2sjjc3b/8/](http://jsfiddle.net/loredana_cirstea/L2sjjc3b/8/)
+
+
 ```html
 <script src="path/to/svg.js"></script>
 <script src="path/to/svg.draggable.js"></script>
@@ -155,7 +158,7 @@ Sets the connector and marker color.
 - **Connectable** `c`: The connectable instance. Optional.
 
 ## How to contribute
-1. File an issue in the repository and provide an example for it (you can fork this jsfiddle to reproduce the bug: ) or:
+1. File an issue in the repository and provide an example for it (you can fork [this jsfiddle](http://jsfiddle.net/loredana_cirstea/19ucx6ru/1/) to reproduce the bug: ) or:
 2. Fork the project in your account and create a new branch:
    `your-great-feature`.
 3. Commit your changes in that branch.

@@ -131,7 +131,7 @@
             return c;
         }
 
-        con.setMarker(options.marker, options.markers);
+        con.setMarker(options.marker, markers);
 
 
         /**
