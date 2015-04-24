@@ -4,7 +4,7 @@
  *
  * A JavaScript library for connecting SVG things.
  * Forked from https://github.com/jillix/svg.connectable.js
- * Modified by Loretek. Algorithm for creating connector curves from Christian Tzurcanu (https://github.com/ctzurcanu)
+ * Modified by Loretek (https://github.com/loredanacirstea). Algorithm for creating connector curves from Christian Tzurcanu (https://github.com/ctzurcanu)
  *
  * svg.connectable.js 1.0.1
  * Licensed under the MIT license.
@@ -40,10 +40,10 @@
      *  - [`computeConnectorCoordinates` (Function)](#computeconnectorcoordinatescon)
      *  - [`update` (Function)](#update)
      *  - [`setConnectorColor` (Function)](#setconnectorcolorcolor-c)
-     *  - [`setMarker`] (Function)](#setmarker)
-     *  - [`setConnectorAttachment`] (Function)](#setconnectorattachment)
-     *  - [`setConnector`] (Function)](#setconnector)
-     *  - [`setType`] (Function)](#settype)
+     *  - [`setMarker` (Function)](#setmarker)
+     *  - [`setConnectorAttachment` (Function)](#setconnectorattachment)
+     *  - [`setConnector` (Function)](#setconnector)
+     *  - [`setType` (Function)](#settype)
      */
 
     function connectable(options, elmTarget) {
@@ -148,11 +148,9 @@
             var temp = {}, p;
             var sPos = con.source.bbox();
             var tPos = con.target.bbox();
-
             if(con.sourceAttach == 'center')
                 temp.point1 = [sPos.x + sPos.width / 2, sPos.y + sPos.height / 2]
             else if(con.source.type == 'ellipse'){
-
                 // Get ellipse radius
                 var xR1 = parseFloat(con.source.attr('rx'));
                 var yR1 = parseFloat(con.source.attr('ry'));
@@ -200,7 +198,7 @@
 
             if(con.targetAttach == 'center')
                 temp.point2 = [tPos.x + tPos.width / 2, tPos.y + tPos.height / 2]
-            else if(con.source.type == 'ellipse'){
+            else if(con.target.type == 'ellipse'){
                 // Get ellipse radius
                 var xR2 = parseFloat(con.target.attr('rx'));
                 var yR2 = parseFloat(con.target.attr('ry'));
@@ -227,7 +225,7 @@
 
                 temp.point2 = [x2 + xR2 / 2, y2 + yR2 / 2]
             }
-            else if(con.source.type == 'path'){
+            else if(con.target.type == 'path'){
                 var arr2 = JSON.parse(JSON.stringify(con.target.array.valueOf()));
                 if(arr2[arr2.length-1][0] == 'Z')
                     arr2.splice(arr2.length-1,1)
