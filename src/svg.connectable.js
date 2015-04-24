@@ -66,9 +66,9 @@
         if(options.connector && options.connector.target.type == 'path'){
             con.connector = options.connector
             var patharr = con.connector.target.array.valueOf()
-            if(!patharr[1][0] == 'M' || !patharr[2][0] == 'M'){
-                var box = con.connector.bbox();
-                patharr.splice(0,0,['M', box.x+box.width/2, box.y], ['M', box.x + box.width/2, box.y]);
+            if(!(patharr[1][0] == 'M') || !(patharr[2][0] == 'M')){
+                var box = con.connector.target.bbox();
+                patharr.splice(0,0,['M', box.x+box.width/2, box.y], ['M', box.x + box.width/2, box.y2]);
                 con.connector.target.plot(patharr);
             }
         }
