@@ -244,7 +244,7 @@
             }
 
             if(!temp.point1 || !temp.point2){
-                temp.min = Number.MAX_SAFE_INTEGER;
+                temp.min = Number.MAX_VALUE;
                 if(!temp.point1 && !temp.point2)
                     for(var i = 0 ; i < arr1.length; i++){
                         for(var j = 0 ; j < arr2.length; j++){
@@ -291,8 +291,13 @@
                         var y1 = pp1[1] + (pp2[1] - pp1[1]) / 5
                         var attr1 = {x: (y1 - b1) / m1, y: y1}
                     } 
-                    else
-                        var attr1 = {x: pp1[0] + Math.sign(pp2[0]-pp1[0]) * Math.abs((pp2[1] - pp1[1]) / 5), y: pp1[1]}                 
+                    else{
+                        if(pp2[0]-pp1[0] >= 0)
+                            var sign = 1
+                        else
+                            var sign = -1
+                        var attr1 = {x: pp1[0] + sign * Math.abs((pp2[1] - pp1[1]) / 5), y: pp1[1]}
+                    }                 
                 }
                 else
                     var attr1 = {x: pp1[0], y: pp1[1] + (pp2[1] - pp1[1]) / 5}
@@ -309,8 +314,13 @@
                         var y2 = pp2[1] - (pp2[1] - pp1[1]) / 5
                         var attr2 = {x: (y2 - b2) / m2, y: y2}
                     }
-                    else
-                        var attr2 = {x: pp2[0] - Math.sign(pp2[0]-pp1[0]) * Math.abs((pp2[1] - pp1[1]) / 5), y: pp2[1]}   
+                    else{
+                        if(pp2[0]-pp1[0] >= 0)
+                            var sign = 1
+                        else
+                            var sign = -1
+                        var attr2 = {x: pp2[0] - sign * Math.abs((pp2[1] - pp1[1]) / 5), y: pp2[1]}
+                    }
                 }
                 else
                     var attr2 = {x: pp2[0], y: pp2[1] - (pp2[1] - pp1[1]) / 5}
