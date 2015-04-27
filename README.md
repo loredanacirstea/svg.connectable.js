@@ -175,4 +175,9 @@ Sets the connector and marker color.
    message.
 
 ## GPLv3 License
+
+Copyright (c) 2015 Loredana Cirstea 
+Copyright (c) 2015 Christian Tzurcanu - Algorithm for creating connector curves, connector paths.
+
 See the [LICENSE](./LICENSE) file.
+
