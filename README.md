@@ -2,14 +2,14 @@ svg.connectable.js
 ==================
 A JavaScript library for connecting SVG things.
 
-[![](/connectable.png)](http://jsfiddle.net/loredana_cirstea/L2sjjc3b/10/)
+[![](/connectable.png)](http://jsfiddle.net/loredana_cirstea/L2sjjc3b/11/)
 
 ## Usage
 
 This library depends on:
 
  - [SVG.js](https://github.com/wout/svg.js)
- - [svg.draggable.js](https://github.com/jillix/svg.draggable.js) (note this is the @jillix fork of the original *svg.draggable.js* project)
+ - [svg.draggy.js](https://github.com/jillix/svg.draggy.js) (note this is the @jillix fork of the original *svg.draggable.js* project)
 
 
 Different from original [jillix library](https://github.com/jillix/svg.connectable.js):
@@ -20,12 +20,12 @@ Different from original [jillix library](https://github.com/jillix/svg.connectab
  - functions for changing the connection settings after initializing it.
  - padEllipse function from jillix is used automatically for ellipses ('perifery' attachment).
 
- Following example can be found and tested at: [http://jsfiddle.net/loredana_cirstea/L2sjjc3b/10/](http://jsfiddle.net/loredana_cirstea/L2sjjc3b/8/)
+ Following example can be found and tested at: [http://jsfiddle.net/L2sjjc3b/11/](http://jsfiddle.net/loredana_cirstea/L2sjjc3b/11/)
 
 
 ```html
 <script src="path/to/svg.js"></script>
-<script src="path/to/svg.draggable.js"></script>
+<script src="path/to/svg.draggy.js"></script>
 <script src="path/to/svg.connectable.js"></script>
 <script>
     var svg = new SVG($(".graph").get(0)).size("100%", 900);
@@ -34,18 +34,18 @@ Different from original [jillix library](https://github.com/jillix/svg.connectab
     var nodes = svg.group();
     var defs = svg.defs();
 
-    var g1 = nodes.group().translate(400, 50).draggable();
+    var g1 = nodes.group().translate(400, 50).draggy();
     g1.circle(50).fill("#C2185B").opacity(0.8);
 
     var g2 = nodes.path('M171.5343780517578 146.06103515625L177.91102600097656 126.95043182373047L192.97349548339844 113.02484130859375L211.7304229736328 104.78312683105469L231.62428283691406 100.80436706542969L252.0863494873047 100.80436706542969L272.2646484375 104.78312683105469L291.021484375 113.02484130859375L306.0840148925781 126.95043182373047L312.33636474609375 145.99163818359375L306.0840148925781 165.3169708251953L291.021484375 178.95843505859375L272.2646484375 187.48428344726562L252.0863494873047 191.46316528320312L231.62428283691406 191.46316528320312L211.7304229736328 187.48428344726562L192.97349548339844 178.95843505859375L177.91102600097656 165.3169708251953L171.5343780517578 146.06103515625Z').fill("#E91E63").opacity(0.6)
-    g2.draggable();
+    g2.draggy();
 
-    var g3 = nodes.group().translate(20, 20).draggable();
+    var g3 = nodes.group().translate(20, 20).draggy();
     g3.circle(80).fill("#FF5252").opacity(0.4);
 
     //circles and ellipses use the jillix padEllipse algorithm for perifery points. Try it out with g3 without the container group:
     //var g3 = nodes.circle(80).fill("#FF5252").opacity(0.4).move(20,20);
-    //g3.draggable();
+    //g3.draggy();
 
     //parameters are optional - if you only provide the source and the target, you will get a straight path connecting the two elements' centers, with no marker(arrow), black ('#000000') color.
 
@@ -76,7 +76,7 @@ Different from original [jillix library](https://github.com/jillix/svg.connectab
     //usually you'd want to reuse the connector, so the library works with elements initialized through use()
     var connector = defs.path(extraPointForSource+extraPointForTarget+connectorpath).fill('#00ff4a').opacity(0.8)
     var connectorInUse = nodes.use(connector)
-    var g4 = nodes.circle(20).fill('#000000').opacity(0.6).draggable()
+    var g4 = nodes.circle(20).fill('#000000').opacity(0.6).draggy()
     
     var conn3 = g4.connectable({
         connector: connectorInUse
