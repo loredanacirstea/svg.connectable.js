@@ -2,7 +2,7 @@ svg.connectable.js
 ==================
 A JavaScript library for connecting SVG things.
 
-[![](/connectable.png)](http://jsfiddle.net/loredana_cirstea/L2sjjc3b/11/)
+[![](/connectable.png)](http://jsfiddle.net/L2sjjc3b/11/)
 
 ## Usage
 
@@ -20,7 +20,7 @@ Different from original [jillix library](https://github.com/jillix/svg.connectab
  - functions for changing the connection settings after initializing it.
  - padEllipse function from jillix is used automatically for ellipses ('perifery' attachment).
 
- Following example can be found and tested at: [http://jsfiddle.net/L2sjjc3b/11/](http://jsfiddle.net/loredana_cirstea/L2sjjc3b/11/)
+ Following example can be found and tested at: [https://jsfiddle.net/L2sjjc3b/11/](https://jsfiddle.net/L2sjjc3b/11/)
 
 
 ```html
@@ -167,7 +167,7 @@ Sets the connector and marker color.
 - **Connectable** `c`: The connectable instance. Optional.
 
 ## How to contribute
-1. File an issue in the repository and provide an example for it (you can fork [this jsfiddle](http://jsfiddle.net/loredana_cirstea/19ucx6ru/1/) to reproduce the bug: ) or:
+1. File an issue in the repository and provide an example for it (you can fork [this jsfiddle](https://jsfiddle.net/loredana_cirstea/19ucx6ru/2/) to reproduce the bug: ) or:
 2. Fork the project in your account and create a new branch:
    `your-great-feature`.
 3. Commit your changes in that branch.
