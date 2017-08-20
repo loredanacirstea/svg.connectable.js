@@ -174,9 +174,6 @@ Sets the connector and marker color.
 4. Open a pull request, and reference the initial issue in the pull request
    message.
 
-## GPLv3 License
-
-Copyright (c) 2015 Loredana Cirstea
-Copyright (c) 2015 Christian Tzurcanu - Algorithm for creating connector curves, connector paths.
+## MIT License
 
 See the [LICENSE](./LICENSE) file.
