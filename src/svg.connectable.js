@@ -195,10 +195,10 @@
             }
             else{
                 var arr1 = [
-                    ['M', sPos.x + sPos.width / 2, sPos.y],
-                    ['L', sPos.x + sPos.width, sPos.y + sPos.height / 2],
-                    ['L', sPos.x + sPos.width / 2, sPos.y + sPos.height],
-                    ['L', sPos.x, sPos.y + sPos.height / 2]
+                    ['M', con.source.cx(), con.source.y()],
+                    ['L', con.source.x() + sPos.width, con.source.cy()],
+                    ['L', con.source.cx(), con.source.y() + sPos.height],
+                    ['L', con.source.x(), con.source.cy()]
                 ]
                 var arr = arr1
                 var point = 'point2'
@@ -237,17 +237,18 @@
             }
             else if(con.target.type == 'path'){
                 var arr2 = JSON.parse(JSON.stringify(con.target.array().value));
-                if(arr2[arr2.length-1][0] == 'Z')
+                if(arr2[arr2.length-1][0] == 'Z') {
                     arr2.splice(arr2.length-1,1)
+                }
                 var arr = arr2;
                 var point = 'point1'
             }
             else{
                 var arr2 = [
-                    ['M', tPos.x + tPos.width / 2, tPos.y],
-                    ['L', tPos.x + tPos.width, tPos.y + tPos.height / 2],
-                    ['L', tPos.x + tPos.width / 2, tPos.y + tPos.height],
-                    ['L', tPos.x, tPos.y + tPos.height / 2]
+                    ['M', con.target.cx(), con.target.y()],
+                    ['L', con.target.x() + tPos.width, con.target.cy()],
+                    ['L', con.target.cx(), con.target.y() + tPos.height],
+                    ['L', con.target.x(), con.target.cy()]
                 ]
                 var arr = arr2
                 var point = 'point1'
@@ -255,7 +256,7 @@
 
             if(!temp.point1 || !temp.point2){
                 temp.min = Number.MAX_VALUE;
-                if(!temp.point1 && !temp.point2)
+                if(!temp.point1 && !temp.point2) {
                     for(var i = 0 ; i < arr1.length; i++){
                         for(var j = 0 ; j < arr2.length; j++){
                             var dist = Math.pow((arr2[j][arr2[j].length-2] - arr1[i][arr1[i].length-2]),2) + Math.pow((arr2[j][arr2[j].length-1] - arr1[i][arr1[i].length-1]),2)
@@ -266,6 +267,7 @@
                             }
                         }
                     }
+                }
                 else{
                     point = temp[point];
                     for(var i = 0 ; i < arr.length; i++){
@@ -286,10 +288,12 @@
             var pp2 = temp.point2
 
             if(con.type == 'curved'){
+                // TODO fix this algorithm
+                /*
                 var c1 = {x: con.source.cx(), y: con.source.cy()}
                 var c2 = {x: con.target.cx(), y: con.target.cy()}
 
-                /*if(Math.abs(pp1[0] - c1.x) > 0.5){
+                if(Math.abs(pp1[0] - c1.x) > 0.5){
                     var m1 = (pp1[1] - c1.y) / (pp1[0] - c1.x)
                     var b1 = pp1[1] - m1 * pp1[0];
 
@@ -309,10 +313,11 @@
                         var attr1 = {x: pp1[0] + sign * Math.abs((pp2[1] - pp1[1]) / 5), y: pp1[1]}
                     }
                 }
-                else*/
+                else
                     var attr1 = {x: pp1[0], y: pp1[1] + (pp2[1] - pp1[1]) / 5}
 
-                /*if(Math.abs(pp2[0] - c2.x) > 0.5){
+
+                if(Math.abs(pp2[0] - c2.x) > 0.5){
                     var m2 = (pp2[1] - c2.y) / (pp2[0] - c2.x)
                     var b2 = pp2[1] - m2 * pp2[0];
 
@@ -332,9 +337,74 @@
                         var attr2 = {x: pp2[0] - sign * Math.abs((pp2[1] - pp1[1]) / 5), y: pp2[1]}
                     }
                 }
-                else*/
+                else
                     var attr2 = {x: pp2[0], y: pp2[1] - (pp2[1] - pp1[1]) / 5}
 
+                var middle = {x: attr1.x + (attr2.x - attr1.x) / 2, y: attr1.y + (attr2.y - attr1.y) / 2}
+                */
+
+                // Tried re-writing the above, but result is less nice than the simple algorithm form below
+
+                /*var factor = 4;
+                var c1 = {x: con.source.cx(), y: con.source.cy()};
+                var c2 = {x: con.target.cx(), y: con.target.cy()};
+                var diff1 = pp2[0] - pp1[0];
+                var diff2 = pp2[1] - pp1[1];
+                var sign1 = diff1 < 0 ? -1 : 1;
+                var sign2 = diff2 < 0 ? -1 : 1;
+                diff1 = Math.abs(diff1);
+                diff2 = Math.abs(diff2);
+                var delta1 = Math.max(diff1 / factor, 20);
+                var delta2 = Math.max(diff2 / factor, 20);
+
+                if(Math.abs(pp1[0] - c1.x) > 0.5){
+                    var m1 = (pp1[1] - c1.y) / (pp1[0] - c1.x)
+                    var b1 = pp1[1] - m1 * pp1[0];
+
+                    if(diff1 < diff2){
+                        var x1 = pp1[0] + sign1 * delta1;
+                        var attr1 = {x: x1, y: m1 * x1 + b1}
+                    }
+                    else if(Math.abs(pp1[1] - c1.y) > 0.5){
+                        var y1 = pp1[1] + sign2 * delta2;
+                        var attr1 = {x: (y1 - b1) / m1, y: y1}
+                    }
+                    else{
+                        var attr1 = {x: pp1[0] + sign2 * delta2, y: pp1[1]}
+                    }
+                }
+                else
+                    var attr1 = {x: pp1[0], y: pp1[1] + sign2 * delta2}
+
+
+                if(Math.abs(pp2[0] - c2.x) > 0.5){
+                    var m2 = (pp2[1] - c2.y) / (pp2[0] - c2.x)
+                    var b2 = pp2[1] - m2 * pp2[0];
+
+                    if(diff1 < diff2) {
+                        var x2 = pp2[0] - sign1 * delta1
+                        var attr2 = {x: x2, y: m2 * x2 + b2}
+                    }
+                    else if(Math.abs(pp2[1] - c2.y) > 0.5){
+                        var y2 = pp2[1] - sign2 * delta2
+                        var attr2 = {x: (y2 - b2) / m2, y: y2}
+                    }
+                    else{
+                        var attr2 = {x: pp2[0] - sign1 * delta2, y: pp2[1]}
+                    }
+                }
+                else
+                    var attr2 = {x: pp2[0], y: pp2[1] - sign2 * delta2}
+
+                var middle = {x: attr1.x + (attr2.x - attr1.x) / 2, y: attr1.y + (attr2.y - attr1.y) / 2}*/
+
+                // Temporary curved algorithm
+                var delta = (pp2[1] - pp1[1]) / 4;
+                var sign = delta < 0 ? -1 : 1;
+                delta = Math.max(Math.abs(delta), 20);
+
+                var attr1 = {x: pp1[0], y: pp1[1] + sign * delta}
+                var attr2 = {x: pp2[0], y: pp2[1] - sign * delta}
                 var middle = {x: attr1.x + (attr2.x - attr1.x) / 2, y: attr1.y + (attr2.y - attr1.y) / 2}
 
                 var points = [
@@ -343,13 +413,13 @@
                     ['C', attr2.x, attr2.y, attr2.x, attr2.y, pp2[0], pp2[1]]
                 ]
 
-                /*if(con.attr1) con.attr1.remove()
+                if(con.attr1) con.attr1.remove()
                 if(con.middle) con.middle.remove()
                 if(con.attr2) con.attr2.remove()
 
-                con.attr1 = con.source.parent().circle(10).cx(attr1.x).cy(attr1.y).fill('#2a88c9')
-                con.middle = con.source.parent().circle(20).cx(middle.x).cy(middle.y)
-                con.attr2 = con.source.parent().circle(10).cx(attr2.x).cy(attr2.y)*/
+                con.attr1 = con.source.parent().circle(5).cx(attr1.x).cy(attr1.y).fill('#2a88c9')
+                con.middle = con.source.parent().circle(10).cx(middle.x).cy(middle.y)
+                con.attr2 = con.source.parent().circle(5).cx(attr2.x).cy(attr2.y)
             }
             else
                 var points = [
