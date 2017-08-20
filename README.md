@@ -14,7 +14,7 @@ This library depends on:
 
 Different from original [jillix library](https://github.com/jillix/svg.connectable.js):
 
- - the connector can be any SVG Path element defined through use() (usually connectors are reused). See example. Note the two M points added for attachment precision. 
+ - the connector can be any SVG Path element defined through use() (usually connectors are reused). See example. Note the two M points added for attachment precision.
  - you can define the [type of attachment](#setconnectorattachmentelement-type-c) (center, perifery) separate for source and target
  - you can have straight/curved connectors - available for the 'default' connector.
  - functions for changing the connection settings after initializing it.
@@ -77,7 +77,7 @@ Different from original [jillix library](https://github.com/jillix/svg.connectab
     var connector = defs.path(extraPointForSource+extraPointForTarget+connectorpath).fill('#00ff4a').opacity(0.8)
     var connectorInUse = nodes.use(connector)
     var g4 = nodes.circle(20).fill('#000000').opacity(0.6).draggy()
-    
+
     var conn3 = g4.connectable({
         connector: connectorInUse
     }, g3);
@@ -176,8 +176,7 @@ Sets the connector and marker color.
 
 ## GPLv3 License
 
-Copyright (c) 2015 Loredana Cirstea 
+Copyright (c) 2015 Loredana Cirstea
 Copyright (c) 2015 Christian Tzurcanu - Algorithm for creating connector curves, connector paths.
 
 See the [LICENSE](./LICENSE) file.
-

@@ -55,25 +55,32 @@
             options = {};
         }
 
-        container = options.container || this.parent || container;
+        container = options.container || this.parent() || container;
         var elmSource = this;
-        markers = options.markers || this.parent || markers;
+        markers = options.markers || this.parent() || markers;
 
         // Append the SVG elements
         con.source = elmSource; //'center', 'perifery'
         con.target = elmTarget;
         con.type = options.type || 'straight' //'straight', 'curved'
-        if(options.connector && options.connector.target.type == 'path'){
-            con.connector = options.connector
-            var patharr = con.connector.target.array.valueOf()
-            if(!(patharr[1][0] == 'M') || !(patharr[2][0] == 'M')){
-                var box = con.connector.target.bbox();
-                patharr.splice(0,0,['M', box.x+box.width/2, box.y], ['M', box.x + box.width/2, box.y2]);
-                con.connector.target.plot(patharr);
+
+        if(options.connector) {
+            var target = SVG.get(options.connector.node.attributes.href.value.slice(1))
+            if(target.type == 'path') {
+                con.connector = options.connector
+                var patharr = target.array().value
+                if(!(patharr[1][0] == 'M') || !(patharr[2][0] == 'M')){
+                    var box = target.rbox();
+                    patharr.splice(0,0,['M', box.x+box.width/2, box.y], ['M', box.x + box.width/2, box.y2]);
+                    target.plot(patharr);
+                }
+                con.connector.target = target;
             }
         }
-        else
+
+        if(!con.connector) {
             con.connector = container.path().attr('connectortype', 'default').fill('none');
+        }
 
         con.sourceAttach = options.sourceAttach || 'center'
         con.targetAttach = options.targetAttach || 'center'
@@ -146,10 +153,12 @@
         con.computeConnectorCoordinates = function (con) {
             con = con || this;
             var temp = {}, p;
-            var sPos = con.source.bbox();
-            var tPos = con.target.bbox();
-            if(con.sourceAttach == 'center')
-                temp.point1 = [sPos.x + sPos.width / 2, sPos.y + sPos.height / 2]
+            var sPos = con.source.rbox();
+            var tPos = con.target.rbox();
+
+            if(con.sourceAttach == 'center') {
+                temp.point1 = [sPos.cx, sPos.cy]
+            }
             else if(con.source.type == 'ellipse'){
                 // Get ellipse radius
                 var xR1 = parseFloat(con.source.attr('rx'));
@@ -178,7 +187,7 @@
                 temp.point1 = [x1 + xR1 / 2, y1 + yR1 / 2]
             }
             else if(con.source.type == 'path'){
-                var arr1 = JSON.parse(JSON.stringify(con.source.array.valueOf()));
+                var arr1 = JSON.parse(JSON.stringify(con.source.array().value));
                 if(arr1[arr1.length-1][0] == 'Z')
                     arr1.splice(arr1.length-1,1)
                 var arr = arr1;
@@ -196,8 +205,9 @@
             }
 
 
-            if(con.targetAttach == 'center')
+            if(con.targetAttach == 'center') {
                 temp.point2 = [tPos.x + tPos.width / 2, tPos.y + tPos.height / 2]
+            }
             else if(con.target.type == 'ellipse'){
                 // Get ellipse radius
                 var xR2 = parseFloat(con.target.attr('rx'));
@@ -226,7 +236,7 @@
                 temp.point2 = [x2 + xR2 / 2, y2 + yR2 / 2]
             }
             else if(con.target.type == 'path'){
-                var arr2 = JSON.parse(JSON.stringify(con.target.array.valueOf()));
+                var arr2 = JSON.parse(JSON.stringify(con.target.array().value));
                 if(arr2[arr2.length-1][0] == 'Z')
                     arr2.splice(arr2.length-1,1)
                 var arr = arr2;
@@ -279,7 +289,7 @@
                 var c1 = {x: con.source.cx(), y: con.source.cy()}
                 var c2 = {x: con.target.cx(), y: con.target.cy()}
 
-                if(Math.abs(pp1[0] - c1.x) > 0.5){
+                /*if(Math.abs(pp1[0] - c1.x) > 0.5){
                     var m1 = (pp1[1] - c1.y) / (pp1[0] - c1.x)
                     var b1 = pp1[1] - m1 * pp1[0];
 
@@ -290,19 +300,19 @@
                     else if(Math.abs(pp1[1] - c1.y) > 0.5){
                         var y1 = pp1[1] + (pp2[1] - pp1[1]) / 5
                         var attr1 = {x: (y1 - b1) / m1, y: y1}
-                    } 
+                    }
                     else{
                         if(pp2[0]-pp1[0] >= 0)
                             var sign = 1
                         else
                             var sign = -1
                         var attr1 = {x: pp1[0] + sign * Math.abs((pp2[1] - pp1[1]) / 5), y: pp1[1]}
-                    }                 
+                    }
                 }
-                else
+                else*/
                     var attr1 = {x: pp1[0], y: pp1[1] + (pp2[1] - pp1[1]) / 5}
 
-                if(Math.abs(pp2[0] - c2.x) > 0.5){
+                /*if(Math.abs(pp2[0] - c2.x) > 0.5){
                     var m2 = (pp2[1] - c2.y) / (pp2[0] - c2.x)
                     var b2 = pp2[1] - m2 * pp2[0];
 
@@ -322,7 +332,7 @@
                         var attr2 = {x: pp2[0] - sign * Math.abs((pp2[1] - pp1[1]) / 5), y: pp2[1]}
                     }
                 }
-                else
+                else*/
                     var attr2 = {x: pp2[0], y: pp2[1] - (pp2[1] - pp1[1]) / 5}
 
                 var middle = {x: attr1.x + (attr2.x - attr1.x) / 2, y: attr1.y + (attr2.y - attr1.y) / 2}
@@ -331,7 +341,15 @@
                     ['M', pp1[0], pp1[1]],
                     ['C', attr1.x, attr1.y, attr1.x, attr1.y, middle.x, middle.y],
                     ['C', attr2.x, attr2.y, attr2.x, attr2.y, pp2[0], pp2[1]]
-                ]  
+                ]
+
+                /*if(con.attr1) con.attr1.remove()
+                if(con.middle) con.middle.remove()
+                if(con.attr2) con.attr2.remove()
+
+                con.attr1 = con.source.parent().circle(10).cx(attr1.x).cy(attr1.y).fill('#2a88c9')
+                con.middle = con.source.parent().circle(20).cx(middle.x).cy(middle.y)
+                con.attr2 = con.source.parent().circle(10).cx(attr2.x).cy(attr2.y)*/
             }
             else
                 var points = [
@@ -357,10 +375,11 @@
                 con.connector.plot(con.computeConnectorCoordinates(con))
             }
             else{
-                var arr = con.connector.target.array.valueOf();
+                var arr = con.connector.target.array().value;
 
                 //find connector's attachment points
                 var path = con.computeConnectorCoordinates(con)
+                //console.log('computeConnectorCoordinates',path )
                 var pp1 = [path[0][1], path[0][2]]
                 var pp2 = [path[path.length-1][path[path.length-1].length-2], path[path.length-1][path[path.length-1].length-1]]
 
@@ -379,14 +398,14 @@
 
                 //new center coordinates for the connector
                 var tcenter = {x: pp1[0] + (pp2[0]-pp1[0]) / 2, y: pp1[1] + (pp2[1]-pp1[1]) / 2}
-                
+
                 //get original angle and center of the connector
                 var originalangle = Math.atan((arr[1][2] - arr[0][2]) / (arr[1][1] - arr[0][1]))
                 var center = {x: con.connector.target.cx(), y: con.connector.target.cy()}
 
                 //initialize matrix with translation from original center to the new center
                 var m = [1, 0, 0, 1, tcenter.x - center.x, tcenter.y - center.y];
-                
+
                 //rotate translated matrix
                 var aa = m[0],
                     ab = m[1],
@@ -409,8 +428,8 @@
                 //translate to new center coordinates
                 m[4] = aa * tcenter.x + ac * tcenter.y + m[4]
                 m[5] = ab * tcenter.x + ad * tcenter.y + m[5]
-                
-                //translate neutral matrix to origin by deducting original center coordinated then scale and translate again to original center 
+
+                //translate neutral matrix to origin by deducting original center coordinated then scale and translate again to original center
                 var aa = 1,
                     ab = 0,
                     ac = 0,
@@ -437,7 +456,8 @@
                 matrix[4] = m[0]*sm[4] + m[2]*sm[5] + m[4];
                 matrix[5] = m[1]*sm[4] + m[3]*sm[5] + m[5];
 
-                con.connector.transform('matrix', matrix.join(','));
+                matrix = new SVG.Matrix(matrix.join(','))
+                con.connector.transform(matrix);
             }
         };
         con.update();
