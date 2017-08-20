@@ -20,7 +20,7 @@ Different from original [jillix library](https://github.com/jillix/svg.connectab
  - functions for changing the connection settings after initializing it.
  - padEllipse function from jillix is used automatically for ellipses ('perifery' attachment).
 
- Following example can be found and tested at: [https://jsfiddle.net/L2sjjc3b/11/](https://jsfiddle.net/L2sjjc3b/11/)
+ Following example can be found and tested at: [https://jsfiddle.net/L2sjjc3b/79/](https://jsfiddle.net/L2sjjc3b/79/)
 
 
 ```html
