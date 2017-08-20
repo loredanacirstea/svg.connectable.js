@@ -3,11 +3,13 @@
  * =========================
  *
  * A JavaScript library for connecting SVG things.
- * Forked from https://github.com/jillix/svg.connectable.js
- * Modified by Loretek (https://github.com/loredanacirstea). Algorithm for creating connector curves from Christian Tzurcanu (https://github.com/ctzurcanu)
  *
  * svg.connectable.js 1.0.1
  * Licensed under the MIT license.
+ * Copyright (c) 2014-15 jillix
+ * Copyright (c) 2015-17 Loredana Cirstea
+ * Copyright (c) 2015 Christian Tzurcanu - Algorithm for creating connector curves, connector paths.
+ *
  * */
 ;(function() {
 
@@ -413,13 +415,13 @@
                     ['C', attr2.x, attr2.y, attr2.x, attr2.y, pp2[0], pp2[1]]
                 ]
 
-                if(con.attr1) con.attr1.remove()
+                /*if(con.attr1) con.attr1.remove()
                 if(con.middle) con.middle.remove()
                 if(con.attr2) con.attr2.remove()
 
                 con.attr1 = con.source.parent().circle(5).cx(attr1.x).cy(attr1.y).fill('#2a88c9')
                 con.middle = con.source.parent().circle(10).cx(middle.x).cy(middle.y)
-                con.attr2 = con.source.parent().circle(5).cx(attr2.x).cy(attr2.y)
+                con.attr2 = con.source.parent().circle(5).cx(attr2.x).cy(attr2.y)*/
             }
             else
                 var points = [

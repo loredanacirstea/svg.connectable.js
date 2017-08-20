@@ -7,7 +7,7 @@ var defs = svg.defs();
 var g1 = nodes.group().translate(400, 50).draggy();
 g1.circle(50).fill("#C2185B").opacity(0.8);
 
-var g2 = nodes.path('M220.59140014648438 178.47537231445312L236.7823944091797 123.76339721679688L291.40234375 144.3238067626953L219.5858612060547 178.8314208984375Z').fill("#E91E63").opacity(0.6)
+var g2 = nodes.path('M230.59140014648438 334.4753723144531L246.7823944091797 279.7633972167969L301.40234375 300.3238067626953L229.5858612060547 334.8314208984375Z ').fill("#E91E63").opacity(0.6)
 g2.draggy();
 
 var g3 = nodes.group().translate(20, 20).draggy();
@@ -29,8 +29,22 @@ var conn1 = g1.connectable({
     markers: markers,
     marker: 'default',
     targetAttach: 'perifery',
+    //sourceAttach: 'perifery',
     color: '#2a88c9'
 }, g2);
+
+/*
+var g11 = nodes.circle(50).fill("#C2185B").opacity(0.8);
+g11.move(400, 150).draggy();
+var conn11 = g11.connectable({
+    container: links,
+    markers: markers,
+    marker: 'default',
+    targetAttach: 'perifery',
+    sourceAttach: 'perifery',
+    color: '#2a88c9'
+}, g2);
+*/
 
 var conn2 = g2.connectable({
     targetAttach: 'perifery',
@@ -43,5 +57,7 @@ conn2.setMarker('default',markers)
 var connectorInUse = nodes.use(connector)
 
 var conn3 = g4.connectable({
-    connector: connectorInUse
+    connector: connectorInUse,
+    //targetAttach: 'perifery',
+    //sourceAttach: 'perifery',
 }, g3);
