@@ -157,7 +157,7 @@
             var tPos = con.target.rbox();
 
             if(con.sourceAttach == 'center') {
-                temp.point1 = [sPos.cx, sPos.cy]
+                temp.point1 = [con.source.cx(), con.source.cy()]
             }
             else if(con.source.type == 'ellipse'){
                 // Get ellipse radius
@@ -206,7 +206,7 @@
 
 
             if(con.targetAttach == 'center') {
-                temp.point2 = [tPos.x + tPos.width / 2, tPos.y + tPos.height / 2]
+                temp.point2 = [con.target.cx(), con.target.cy()]
             }
             else if(con.target.type == 'ellipse'){
                 // Get ellipse radius
